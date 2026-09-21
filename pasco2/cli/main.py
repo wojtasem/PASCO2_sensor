@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 
+from dotenv import load_dotenv
+
 from pasco2.application.measurement_service import MeasurementService
 from pasco2.config import AppConfig
 from pasco2.logging_config import configure_logging
@@ -29,6 +31,12 @@ def build_repository(config: AppConfig) -> MeasurementRepository:
 
 
 def main() -> None:
+    # Wczytuje plik .env (jesli istnieje) do zmiennych srodowiskowych
+    # procesu, zanim AppConfig.from_env() je odczyta. AppConfig sam nie
+    # dotyka plikow - to jedyne miejsce w aplikacji z ta odpowiedzialnoscia,
+    # zeby config.py zostal latwy do testowania bez dotykania dysku.
+    load_dotenv()
+
     config = AppConfig.from_env()
     configure_logging(config.log_level)
 

@@ -5,6 +5,7 @@ description = "Aplikacja do obslugi czujnika CO2 PASCO2 (Infineon) po porcie sze
 requires-python = ">=3.10"
 dependencies = [
     "pyserial>=3.5",
+    "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]
