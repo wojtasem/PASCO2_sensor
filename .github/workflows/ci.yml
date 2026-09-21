@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch: {}
+
+jobs:
+  lint-and-test:
+    name: Lint & testy (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout kodu
+        uses: actions/checkout@v4
+
+      - name: Ustaw Pythona ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Zainstaluj zaleznosci (dev)
+        run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check pasco2 tests
+
+      - name: Testy (pytest, bez e2e, z pokryciem)
+        run: pytest --cov=pasco2 --cov-report=term-missing --cov-report=xml -m "not e2e"
+
+      - name: Upload raportu pokrycia
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          retention-days: 14
+
+  build-check:
+    name: Sprawdzenie budowania pakietu
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - name: Checkout kodu
+        uses: actions/checkout@v4
+
+      - name: Ustaw Pythona
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Zbuduj pakiet (sdist + wheel)
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build

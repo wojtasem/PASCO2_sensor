@@ -1,0 +1,38 @@
+[project]
+name = "pasco2"
+version = "0.1.0"
+description = "Aplikacja do obslugi czujnika CO2 PASCO2 (Infineon) po porcie szeregowym"
+requires-python = ">=3.10"
+dependencies = [
+    "pyserial>=3.5",
+]
+
+[project.optional-dependencies]
+postgres = ["SQLAlchemy>=2.0", "psycopg2-binary>=2.9"]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "pytest-mock>=3.14",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+pasco2-monitor = "pasco2.cli.main:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["pasco2*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+markers = [
+    "e2e: testy end-to-end wymagajace fizycznego sprzetu lub prawdziwej bazy danych",
+]
+addopts = "-m \"not e2e\""
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
