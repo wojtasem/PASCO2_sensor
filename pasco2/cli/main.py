@@ -34,9 +34,14 @@ def main() -> None:
 
     repository = build_repository(config)
 
+    rate_seconds = max(1, min(255, round(config.measurement_interval_s)))
+
     with SerialTransport(config.serial_port, config.baud_rate) as transport:
-        service = MeasurementService(transport)
-        service.initialize_continuous_mode()
+        service = MeasurementService(
+            transport,
+            max_wait_for_data_s=max(30.0, rate_seconds * 3),
+        )
+        service.initialize_continuous_mode(rate_seconds=rate_seconds)
 
         def on_reading(reading: Co2Reading) -> None:
             timestamp = datetime.now(timezone.utc)
@@ -44,7 +49,7 @@ def main() -> None:
             repository.save(reading, timestamp)
 
         try:
-            service.run_forever(config.measurement_interval_s, on_reading)
+            service.run_forever(on_reading)
         except KeyboardInterrupt:
             logger.info("Przerwano dzialanie programu przez uzytkownika.")
 

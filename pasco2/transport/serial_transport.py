@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import Optional
 
 import serial
@@ -20,10 +21,21 @@ class SerialTransport(SensorTransport):
     Jedyne miejsce w aplikacji (poza cli/main.py), ktore importuje pyserial.
     """
 
-    def __init__(self, port: str, baud_rate: int, timeout: float = 1.0) -> None:
+    def __init__(
+        self,
+        port: str,
+        baud_rate: int,
+        timeout: float = 1.0,
+        startup_delay_s: float = 1.5,
+    ) -> None:
         self._port = port
         self._baud_rate = baud_rate
         self._timeout = timeout
+        # Wiele mostkow USB-UART resetuje mikrokontroler sensora przy
+        # otwarciu portu (DTR) - bez tego opoznienia sensor nie odpowiada
+        # na pierwsze komendy. Zweryfikowane empirycznie na 2026-09-21
+        # (Sensor2Go na COM6) - patrz docs/protocol-notes.md.
+        self._startup_delay_s = startup_delay_s
         self._serial: Optional[serial.Serial] = None
 
     def open(self) -> None:
@@ -36,6 +48,8 @@ class SerialTransport(SensorTransport):
         if not self._serial.is_open:
             raise SerialTransportError(f"Port {self._port} nie zostal otwarty.")
         logger.info("Otwarto port %s (baudrate=%s)", self._port, self._baud_rate)
+        if self._startup_delay_s > 0:
+            time.sleep(self._startup_delay_s)
 
     def close(self) -> None:
         if self._serial and self._serial.is_open:

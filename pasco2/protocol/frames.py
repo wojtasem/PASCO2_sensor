@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from pasco2.protocol.commands import STATUS_DATA_READY_BIT
 from pasco2.protocol.exceptions import SensorProtocolError
 
 
@@ -20,6 +21,16 @@ def parse_hex_byte(raw: bytes) -> int:
         raise SensorProtocolError(
             f"Nie mozna sparsowac odpowiedzi sensora jako liczby hex: {raw!r}"
         ) from exc
+
+
+def is_data_ready(status_raw: bytes) -> bool:
+    """Sprawdza bit DATA_RDY (0x10) w odpowiedzi na komende statusu (R,07).
+
+    Zweryfikowane empirycznie na prawdziwym sensorze - patrz komentarz przy
+    STATUS_DATA_READY_BIT w protocol/commands.py.
+    """
+    status = parse_hex_byte(status_raw)
+    return bool(status & STATUS_DATA_READY_BIT)
 
 
 @dataclass(frozen=True)
