@@ -15,18 +15,45 @@ from pasco2.transport.serial_transport import SerialTransport
 
 logger = logging.getLogger(__name__)
 
+_SQLITE_URL_PREFIX = "sqlite:///"
+_POSTGRES_URL_PREFIXES = ("postgres://", "postgresql://")
+
 
 def build_repository(config: AppConfig) -> MeasurementRepository:
-    """Wybiera implementacje repozytorium na podstawie konfiguracji.
+    """Wybiera implementacje repozytorium na podstawie DATABASE_URL.
 
     Jedyne miejsce w aplikacji, ktore decyduje, jaka implementacja
-    MeasurementRepository jest uzywana.
+    MeasurementRepository jest uzywana - reszta kodu zna tylko interfejs.
+
+        sqlite:///plik.db        -> SQLite, sciezka wzgledna do cwd
+        sqlite:////abs/plik.db   -> SQLite, sciezka bezwzgledna
+        postgresql://...         -> PostgreSQL (wymaga extras [postgres])
+        (puste)                  -> tylko w pamieci (bez persystencji)
     """
-    if config.database_url:
+    url = config.database_url
+
+    if not url:
+        logger.warning("Brak DATABASE_URL - pomiary beda przechowywane tylko w pamieci.")
+        return InMemoryMeasurementRepository()
+
+    if url.startswith(_SQLITE_URL_PREFIX):
+        from pasco2.storage.sqlite_repository import SqliteMeasurementRepository
+
+        db_path = url[len(_SQLITE_URL_PREFIX) :]
+        logger.info("Uzywam SQLite jako magazynu pomiarow: %s", db_path)
+        return SqliteMeasurementRepository(db_path)
+
+    if url.startswith(_POSTGRES_URL_PREFIXES):
         from pasco2.storage.postgres_repository import PostgresMeasurementRepository
 
-        return PostgresMeasurementRepository(config.database_url)
-    logger.warning("Brak DATABASE_URL - pomiary beda przechowywane tylko w pamieci.")
+        logger.info("Uzywam PostgreSQL jako magazynu pomiarow.")
+        return PostgresMeasurementRepository(url)
+
+    logger.warning(
+        "Nierozpoznany format DATABASE_URL (schemat: %s) - pomiary beda "
+        "przechowywane tylko w pamieci. Oczekiwano sqlite:/// lub postgresql://.",
+        url.split("://", 1)[0] if "://" in url else url,
+    )
     return InMemoryMeasurementRepository()
 
 
@@ -60,6 +87,10 @@ def main() -> None:
             service.run_forever(on_reading)
         except KeyboardInterrupt:
             logger.info("Przerwano dzialanie programu przez uzytkownika.")
+        finally:
+            close = getattr(repository, "close", None)
+            if callable(close):
+                close()
 
 
 if __name__ == "__main__":
