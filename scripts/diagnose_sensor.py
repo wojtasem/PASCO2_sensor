@@ -50,7 +50,9 @@ def main() -> None:
         print("Sprawdz: czy port to na pewno COM3, czy nic innego go nie trzyma (np. Arduino IDE / inny skrypt).")
         sys.exit(1)
 
-    print("[OK] Port otwarty.\n")
+    print("[OK] Port otwarty. Czekam 1.5s (reset mikrokontrolera przy otwarciu portu bywa czesty)...")
+    time.sleep(1.5)
+    print()
     print("=" * 70)
     print("KROK 1: Sekwencja inicjalizacji trybu ciaglego (idle -> rate -> continuous)")
     print("=" * 70)
