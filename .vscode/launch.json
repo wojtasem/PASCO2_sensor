@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PASCO2: uruchom aplikacje (cli.main)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pasco2.cli.main",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "PASCO2: diagnose_sensor.py (COM6)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/diagnose_sensor.py",
+      "args": ["COM6", "9600"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "PASCO2: watch_status.py (COM6, 60s)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/watch_status.py",
+      "args": ["COM6", "9600", "60"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "PASCO2: pytest (biezacy plik)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["${file}", "-v"],
+      "console": "integratedTerminal"
+    }
+  ]
+}
