@@ -40,7 +40,7 @@ class Co2Reading:
     ppm: int
 
     @staticmethod
-    def from_msb_lsb(msb_raw: bytes, lsb_raw: bytes) -> "Co2Reading":
+    def from_msb_lsb(msb_raw: bytes, lsb_raw: bytes) -> Co2Reading:
         """Buduje odczyt z surowych odpowiedzi na komendy MSB/LSB.
 
         ppm = (msb << 8) + lsb, tak samo jak w legacy/PASCO2Monitor.py.

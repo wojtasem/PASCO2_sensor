@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping, Optional
 
 
 @dataclass(frozen=True)
@@ -19,10 +19,10 @@ class AppConfig:
     baud_rate: int
     measurement_interval_s: float
     log_level: str
-    database_url: Optional[str] = None
+    database_url: str | None = None
 
     @staticmethod
-    def from_env(env: Optional[Mapping[str, str]] = None) -> "AppConfig":
+    def from_env(env: Mapping[str, str] | None = None) -> AppConfig:
         env = env if env is not None else os.environ
         return AppConfig(
             serial_port=env.get("PASCO2_PORT", "COM3"),

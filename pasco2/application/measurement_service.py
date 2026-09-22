@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Callable
+from collections.abc import Callable
 
 from pasco2.protocol import commands
 from pasco2.protocol.exceptions import SensorProtocolError, SensorTimeoutError

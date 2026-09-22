@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections import deque
-from typing import Dict, List, Optional
 
 
 class FakeSerialTransport:
@@ -19,9 +18,9 @@ class FakeSerialTransport:
     """
 
     def __init__(self) -> None:
-        self._responses: Dict[bytes, deque] = {}
-        self.sent_commands: List[bytes] = []
-        self.raise_on_write: Optional[Exception] = None
+        self._responses: dict[bytes, deque] = {}
+        self.sent_commands: list[bytes] = []
+        self.raise_on_write: Exception | None = None
         self._is_open = False
 
     def queue_response(self, command: bytes, response: bytes) -> None:

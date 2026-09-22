@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Optional
 
 import serial
 
@@ -36,7 +35,7 @@ class SerialTransport(SensorTransport):
         # na pierwsze komendy. Zweryfikowane empirycznie na 2026-09-21
         # (Sensor2Go na COM6) - patrz docs/protocol-notes.md.
         self._startup_delay_s = startup_delay_s
-        self._serial: Optional[serial.Serial] = None
+        self._serial: serial.Serial | None = None
 
     def open(self) -> None:
         try:
@@ -74,7 +73,7 @@ class SerialTransport(SensorTransport):
     def is_open(self) -> bool:
         return bool(self._serial and self._serial.is_open)
 
-    def __enter__(self) -> "SerialTransport":
+    def __enter__(self) -> SerialTransport:  # noqa: PYI034 (Self wymaga Pythona 3.11+)
         self.open()
         return self
 
